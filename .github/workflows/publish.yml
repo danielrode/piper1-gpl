@@ -28,19 +28,17 @@ jobs:
         run: pip install setuptools wheel build
 
       - name: Get version from setup.py
+        shell: python
         run: |
-          python - <<'EOF'
           import re, pathlib, os
 
           text = pathlib.Path("setup.py").read_text(encoding="utf-8")
           m = re.search(r"version\s*=\s*['\"]([^'\"]+)['\"]", text)
           if not m:
-              raise RuntimeError("Version not found")
-          version = m.group(1)
+              raise SystemExit("Version not found")
 
-          with open(os.environ["GITHUB_ENV"], "a") as f:
-              f.write(f"VERSION={version}\n")
-          EOF
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as f:
+              f.write(f"VERSION={m.group(1)}\n")
 
       - name: Verify tag
         id: read_ver
