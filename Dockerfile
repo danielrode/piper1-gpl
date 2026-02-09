@@ -1,31 +1,18 @@
-FROM python:3.12 AS builder
+FROM docker.io/library/python:3.12-slim
 
-RUN apt-get update && \
-    apt-get install --yes --no-install-recommends \
-      build-essential cmake ninja-build git
-
+# Install packages via pip
 WORKDIR /app
-
-COPY pyproject.toml setup.py CMakeLists.txt MANIFEST.in README.md ./
-COPY src/piper/ ./src/piper/
-COPY script/setup script/dev_build script/package ./script/
-RUN script/setup --dev
-RUN script/dev_build
-RUN script/package
-
-# -----------------------------------------------------------------------------
-
-FROM python:3.12-slim
-
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
+RUN python3 -m pip install \
+  --root-user-action ignore \
+  --no-cache-dir \
+  piper-tts \
+  pathvalidate \
+;
+# RUN pip3 install 'flask>=3,<4' # do I need this?/s
 
-WORKDIR /app
-COPY --from=builder /app/dist/piper_tts-*linux*.whl ./dist/
-RUN pip3 install ./dist/piper_tts-*linux*.whl
-RUN pip3 install 'flask>=3,<4'
+# Download a default voice
+# python3 -m piper.download_voices  # List voices
+RUN python3 -m piper.download_voices en_US-lessac-medium
 
-COPY docker/entrypoint.sh /
-
-EXPOSE 5000
-
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["python3", "-m", "piper", "-m", "en_US-lessac-medium"]
