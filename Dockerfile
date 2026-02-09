@@ -11,8 +11,4 @@ RUN python3 -m pip install \
 ;
 # RUN pip3 install 'flask>=3,<4' # do I need this?/s
 
-# Download a default voice
-# python3 -m piper.download_voices  # List voices
-RUN python3 -m piper.download_voices en_US-lessac-medium
-
 ENTRYPOINT ["python3", "-m", "piper", "-m", "en_US-lessac-medium"]
